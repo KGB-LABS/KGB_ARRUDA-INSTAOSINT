@@ -39,3 +39,7 @@ Será gerado o arquivo relatorio_.pdf
 Contato
 Autor: KGB_Arruda
 E-mail: arrudacibersec@proton.me
+
+<h2>Screenshot</h2>
+
+<img src="images/banner.png" width="800">
