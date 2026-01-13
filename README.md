@@ -32,10 +32,13 @@ Instalação
 1. Clonar o repositório
 2. Executar: pip install -r requirements.txt
    
-Uso
-Modo interativo: python main.py
-Modo direto por linha de comando: python main.py
-Será gerado o arquivo relatorio_.pdf
+Uso:
+
+python kgb_arruda_ instaosint.py
+
+
+
+Será gerado o arquivo relatorio.pdf na pasta onde o programa foi instalado
 Contato
 Autor: KGB_Arruda
 E-mail: arrudacibersec@proton.me
