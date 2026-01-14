@@ -28,13 +28,18 @@ Requisitos
 • Conexão com a internet
 • sessionid válido de conta logada no Instagram
 
-Instalação
+Instalação KALI
 1. Clonar o repositório
-2. Executar: pip install -r requirements.txt
-   
-Uso:
+2. Entrar na pasta KGB_ARRUDA-INSTAOSINT
+3. Gerar ambiente virtual (exemplo Python3 -m venv venv)
+4. Habilitar ambiente (source venv/bin/activate)
+4. Executar: pip install -r requirements.txt
+5. Rodar programa com comando python3 kgb_arruda_\ instaosint.py 
 
-python kgb_arruda_ instaosint.py
+   
+
+   
+   
 
 
 
