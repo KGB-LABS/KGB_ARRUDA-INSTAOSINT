@@ -17,6 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 class Colors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -26,6 +27,7 @@ class Colors:
     FAIL = '\033[91m'
     ENDC = '\033[0m'
     BOLD = '\033[1m'
+
 
 class PDFReport(FPDF):
     def __init__(self, *args, **kwargs):
@@ -40,7 +42,7 @@ class PDFReport(FPDF):
         if self.page_no() == 1:
             self.set_font('helvetica', 'B', 16)
             self.set_text_color(63, 81, 181)
-            self.cell(0, 15, self.safe_text('RELATÓRIO DE INVESTIGAÇÃO INSTAOSINT DEEP SCAN'), 0, 1, 'C')
+            self.cell(0, 15, self.safe_text('RELATÓRIO DE INVESTIGAÇÃO'), 0, 1, 'C')
             self.set_draw_color(63, 81, 181)
             self.line(10, 25, 200, 25)
             self.ln(10)
@@ -50,7 +52,7 @@ class PDFReport(FPDF):
         self.set_font('helvetica', 'I', 8)
         self.set_text_color(128, 128, 128)
         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M")
-        self.cell(0, 10, self.safe_text(f'Página {self.page_no()} | Gerado em {timestamp} | Deep Scan Mode'), 0, 0, 'C')
+        self.cell(0, 10, self.safe_text(f'Página {self.page_no()} | Gerado em Instagram Scrapper KGB_Arruda {timestamp} |'), 0, 0, 'C')
 
     def chapter_title(self, title):
         self.set_font('helvetica', 'B', 12)
@@ -58,6 +60,7 @@ class PDFReport(FPDF):
         self.set_text_color(0, 0, 0)
         self.cell(0, 10, self.safe_text(title), 0, 1, 'L', True)
         self.ln(4)
+
 
 class InstagramInvestigatorV4:
     def __init__(self):
@@ -92,11 +95,12 @@ class InstagramInvestigatorV4:
         except:
             return set()
 
-    def perform_graph_analysis(self, target_id: str, target_followers: set, top_interactors: list, session_id: str) -> list:
+    def perform_graph_analysis(self, target_id: str, target_followers: set, top_interactors: list,
+                               session_id: str) -> list:
         """Nova Função: Realiza a Análise de Grafos (Interseção de Seguidores)"""
         logger.info(f"Iniciando Graph Analysis em {len(top_interactors)} interatores...")
         graph_results = []
-        
+
         # Analisar os top 5 interatores para evitar excesso de requests
         for username, count in top_interactors[:5]:
             try:
@@ -104,20 +108,20 @@ class InstagramInvestigatorV4:
                 url_id = f'https://i.instagram.com/api/v1/users/web_profile_info/?username={username}'
                 resp_id = self.session.get(url_id, headers=self.headers, cookies={'sessionid': session_id}, timeout=20)
                 interactor_id = resp_id.json()["data"]["user"]["id"]
-                
+
                 # 2. Obter seguidores do interator
                 interactor_followers = self.get_followers_set(interactor_id, session_id, count=100)
-                
+
                 # 3. Calcular Interseção
                 common = target_followers.intersection(interactor_followers)
-                
+
                 graph_results.append({
                     "username": username,
                     "interactions": count,
                     "common_count": len(common),
-                    "common_users": list(common)[:10] # Top 10 comuns
+                    "common_users": list(common)[:10]  # Top 10 comuns
                 })
-                time.sleep(1.5) # Delay para evitar block
+                time.sleep(1.5)  # Delay para evitar block
             except:
                 continue
         return graph_results
@@ -125,23 +129,24 @@ class InstagramInvestigatorV4:
     def get_user_data(self, username: str, session_id: str) -> Optional[Dict]:
         cookies = {'sessionid': session_id}
         url_profile = f'https://i.instagram.com/api/v1/users/web_profile_info/?username={username}'
-        
+
         try:
             # 1. Perfil Básico
             resp = self.session.get(url_profile, headers=self.headers, cookies=cookies, timeout=30)
             if resp.status_code != 200:
                 logger.error(f"Erro ao acessar perfil: {resp.status_code}")
                 return None
-            
+
             raw_data = resp.json()["data"]["user"]
             user_id = raw_data["id"]
-            
+
             # Info detalhada
             url_info = f'https://i.instagram.com/api/v1/users/{user_id}/info/'
             info_resp = self.session.get(url_info, headers=self.headers, cookies=cookies, timeout=30)
             profile_info = info_resp.json().get("user", raw_data)
 
-            profile_pic_url = profile_info.get("hd_profile_pic_url_info", {}).get("url") or profile_info.get("profile_pic_url")
+            profile_pic_url = profile_info.get("hd_profile_pic_url_info", {}).get("url") or profile_info.get(
+                "profile_pic_url")
             profile_pic_path = self._download_image(profile_pic_url, f"profile_{username}")
 
             # 2. Feed (10 posts)
@@ -162,7 +167,8 @@ class InstagramInvestigatorV4:
                 post_info = {
                     "id": item.get("id"),
                     "url": f"https://www.instagram.com/p/{item.get('code')}/",
-                    "caption": item.get("caption", {}).get("text", "Sem legenda") if item.get("caption") else "Sem legenda",
+                    "caption": item.get("caption", {}).get("text", "Sem legenda") if item.get(
+                        "caption") else "Sem legenda",
                     "location": item.get("location", {}).get("name", "Nenhuma"),
                     "lat": item.get("location", {}).get("lat"),
                     "lng": item.get("location", {}).get("lng"),
@@ -179,7 +185,7 @@ class InstagramInvestigatorV4:
                         comm_url = f'https://i.instagram.com/api/v1/media/{item.get("id")}/comments/'
                         comm_resp = self.session.get(comm_url, headers=self.headers, cookies=cookies, timeout=15)
                         comments = comm_resp.json().get("comments", [])
-                        
+
                         for c in comments:
                             commenter = c.get("user", {}).get("username")
                             interaction_counter[commenter] += 1
@@ -189,8 +195,9 @@ class InstagramInvestigatorV4:
                                     "text": c.get("text"),
                                     "date": datetime.fromtimestamp(c.get("created_at")).strftime('%d/%m/%Y %H:%M')
                                 })
-                    except: pass
-                
+                    except:
+                        pass
+
                 # Simular delay humano para evitar block
                 time.sleep(1)
 
@@ -226,18 +233,30 @@ class InstagramInvestigatorV4:
         # 1. Resumo do Perfil
         pdf.chapter_title('1. RESUMO DO PERFIL ALVO')
         if data.get('profile_pic'):
-            try: pdf.image(data['profile_pic'], x=150, y=35, w=40)
-            except: pass
+            try:
+                pdf.image(data['profile_pic'], x=150, y=35, w=40)
+            except:
+                pass
 
         p = data['profile']
+        # Expansão solicitada: Incluindo todas as informações possíveis no Tópico 1
         fields = [
             ('Username', f"@{p.get('username')}"),
             ('Nome Completo', p.get('full_name')),
-            ('ID', p.get('pk')),
+            ('User ID (PK)', p.get('pk')),
+            ('Biografia', p.get('biography', 'N/A')),
+            ('Link Externo', p.get('external_url', 'Nenhum')),
             ('Seguidores', f"{p.get('follower_count', 0):,}"),
             ('Seguindo', f"{p.get('following_count', 0):,}"),
+            ('Total de Posts', f"{p.get('media_count', 0):,}"),
             ('Privado', 'Sim' if p.get('is_private') else 'Não'),
-            ('Biografia', p.get('biography', ''))
+            ('Verificado', 'Sim' if p.get('is_verified') else 'Não'),
+            ('Conta Comercial', 'Sim' if p.get('is_business') else 'Não'),
+            ('Categoria', p.get('category', 'N/A')),
+            ('Email Público', p.get('public_email', 'N/A')),
+            ('Telefone Público', p.get('contact_phone_number', 'N/A')),
+            ('Cidade', p.get('city_name', 'N/A')),
+            ('Endereço', p.get('address_street', 'N/A'))
         ]
         for label, value in fields:
             pdf.set_font('helvetica', 'B', 10)
@@ -249,9 +268,10 @@ class InstagramInvestigatorV4:
         pdf.ln(10)
         pdf.chapter_title('2. GRAPH ANALYSIS (CÍRCULOS DE CONFIANÇA)')
         pdf.set_font('helvetica', 'I', 9)
-        pdf.multi_cell(0, 5, pdf.safe_text("Análise de interseção entre os seguidores do alvo e seus principais interatores. Números altos indicam proximidade real ou contas de suporte."))
+        pdf.multi_cell(0, 5, pdf.safe_text(
+            "Análise de interseção entre os seguidores do alvo e seus principais interatores. Números altos indicam proximidade real ou contas de suporte."))
         pdf.ln(3)
-        
+
         if not data.get('graph_analysis'):
             pdf.cell(0, 6, "Dados insuficientes para análise de grafos.", 0, 1)
         else:
@@ -296,14 +316,15 @@ class InstagramInvestigatorV4:
         # 5. Análise de 10 Posts com Imagens
         pdf.add_page()
         pdf.chapter_title('5. ANÁLISE DETALHADA DOS ÚLTIMOS 10 POSTS')
-        
+
         for post in data['posts']:
             if pdf.get_y() > 200: pdf.add_page()
             start_y = pdf.get_y()
-            
+
             pdf.set_font('helvetica', 'B', 9)
-            pdf.cell(0, 6, pdf.safe_text(f"Data: {post['timestamp']} | Likes: {post['likes']} | Comentários: {post['comments_count']}"), 0, 1)
-            
+            pdf.cell(0, 6, pdf.safe_text(
+                f"Data: {post['timestamp']} | Likes: {post['likes']} | Comentários: {post['comments_count']}"), 0, 1)
+
             pdf.set_font('helvetica', 'U', 8)
             pdf.set_text_color(0, 0, 255)
             pdf.cell(0, 5, pdf.safe_text(f"Link: {post['url']}"), 0, 1, link=post['url'])
@@ -319,9 +340,11 @@ class InstagramInvestigatorV4:
             pdf.multi_cell(120, 4, pdf.safe_text(f"Legenda: {caption}"))
 
             if post.get('local_img'):
-                try: pdf.image(post['local_img'], x=140, y=start_y, w=50)
-                except: pass
-            
+                try:
+                    pdf.image(post['local_img'], x=140, y=start_y, w=50)
+                except:
+                    pass
+
             pdf.ln(15)
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.ln(5)
@@ -329,17 +352,22 @@ class InstagramInvestigatorV4:
         pdf.output(filename)
         # Limpeza
         for f in os.listdir(self.temp_dir):
-            try: os.remove(os.path.join(self.temp_dir, f))
-            except: pass
-        try: os.rmdir(self.temp_dir)
-        except: pass
+            try:
+                os.remove(os.path.join(self.temp_dir, f))
+            except:
+                pass
+        try:
+            os.rmdir(self.temp_dir)
+        except:
+            pass
         return filename
 
     def run(self):
-        print(f"{Colors.OKGREEN}{Colors.BOLD}💀💀💀💀Instagram Scrapper KGB_Arruda 💀💀💀💀{Colors.ENDC}")
-        print(f"{Colors.OKGREEN}{Colors.BOLD}xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx{Colors.ENDC}")
-        print(f"{Colors.OKGREEN}{Colors.BOLD}    👮ferramenta OSINT COM API DO INSTAGRAM{Colors.ENDC}")
-        print(f"{Colors.OKGREEN}{Colors.BOLD}        DEV: arrudacibersec@proton.me  🖥️🏴‍☠️{Colors.ENDC}")
+        print(f"{Colors.OKGREEN}{Colors.BOLD}💀💀💀💀 Instagram Scrapper KGB_Arruda 💀💀💀💀{Colors.ENDC}")
+        print(f"{Colors.OKGREEN}{Colors.BOLD}💀............................................ 💀{Colors.ENDC}")
+        print(f"{Colors.OKGREEN}{Colors.BOLD}💀💀👮ferramenta OSINT COM API DO INSTAGRAM  💀💀{Colors.ENDC}")
+        print(f"{Colors.OKGREEN}{Colors.BOLD}💀💀💀💀..DEV: arrudacibersec@proton.me 💀💀💀💀{Colors.ENDC}")
+        print(f"{Colors.OKGREEN}{Colors.BOLD}💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀💀{Colors.ENDC}")
         username = input("Username (sem @): ").strip().lstrip('@')
         session_id = input("Session ID: ").strip()
 
@@ -348,10 +376,11 @@ class InstagramInvestigatorV4:
             return
 
         print(f"{Colors.OKCYAN}Iniciando Deep Scan + Graph Analysis de @{username}...{Colors.ENDC}")
-        print(f"{Colors.WARNING}Aviso: Esta análise é profunda e levará cerca de 45-60 segundos para evitar bloqueios.{Colors.ENDC}")
-        
+        print(
+            f"{Colors.WARNING}Aviso: Esta análise é profunda e levará cerca de 45-60 segundos para evitar bloqueios.{Colors.ENDC}")
+
         data = self.get_user_data(username, session_id)
-        
+
         if data:
             filename = f"relatorio_graph_{username}.pdf"
             try:
@@ -362,6 +391,7 @@ class InstagramInvestigatorV4:
                 print(f"{Colors.FAIL}Erro ao gerar PDF: {e}{Colors.ENDC}")
         else:
             print(f"{Colors.FAIL}Falha ao coletar dados. Verifique o Session ID ou conexão.{Colors.ENDC}")
+
 
 if __name__ == "__main__":
     investigator = InstagramInvestigatorV4()
