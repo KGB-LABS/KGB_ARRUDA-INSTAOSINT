@@ -1,3 +1,4 @@
 instagrapi
 pillow
-request fpdf
+request 
+fpdf
