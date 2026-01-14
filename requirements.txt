@@ -1,0 +1,3 @@
+instagrapi
+pillow
+request fpdf
