@@ -86,5 +86,7 @@ Esta ferramenta é para fins de pesquisa e auxílio na análise.
 
 Desenvolvido por **KGB-LABS**.
 
+# <img src="Images/Sem título.jpg">
+
 *   **GitHub**: [https://github.com/KGB-LABS](https://github.com/KGB-LABS)
 *   **Email**: arrudacibersec@proton.me
